@@ -304,7 +304,7 @@ The primary path runs entirely inside VideoExpress:
 
 1. Paste the script into the Script section — the `Enter Text` box. Each import must stay under 5 minutes of speech.
 2. Click `Import Speech`. The rendered audio lands in `Media Library` -> `My CloneVoice.ai Audio`.
-3. Preferred scene-audio strategy: chunk the script at sentence boundaries into pieces of 10 seconds of speech or less. Ten seconds is a hard cap, and splits happen only at sentence ends, never mid-sentence. Size chunks by character count using the chosen voice's measured speech rate: render one proof chunk, measure its real duration, and derive characters per second (Lucas Rhodes measured roughly 15 characters per second, so about 150 characters fills a 10-second chunk). Run one `Import Speech` per chunk, titling each chunk with its scene ID (for example `SC-001 narration`). These chunks drive the narration-synced scene generation in Section 13.2, where each scene clip renders directly against its chunk audio and synchronization is automatic. A single full-length master from one import remains valid for simple videos assembled by timeline alignment (Sections 15 and 19A); chunked narration-synced clips are preferred for tight synchronization.
+3. Preferred scene-audio strategy: chunk the script at sentence boundaries into pieces of 120 characters or less each. The 120-character cap is the hard limit enforced by the Narration Video audio dialog (a live "0 / 120" counter sits under its text box) and is stricter than any duration rule: at the measured Lucas Rhodes rate of roughly 15 characters per second, 120 characters is about 8 seconds of speech. Chunks must be sentence-bounded AND 120 characters or less; when one sentence exceeds 120 characters, split it at a natural clause boundary, never mid-phrase. Verified reference sizing: chunks of about 100–111 characters render to 6–7-second clips with Lucas Rhodes, so a ~28-second script becomes four chunks of 120 characters or less each; any chunk over 120 must be re-split before generation. Title or tag each chunk with its scene ID (for example `SC-001 narration`). These chunks drive the narration-synced scene generation in Section 13.2, where each scene clip renders directly against its chunk audio (generated inline in the Create Narration Video dialog) and synchronization is automatic. A single full-length master from one import remains valid for simple videos assembled by timeline alignment (Sections 15 and 19A); chunked narration-synced clips are preferred for tight synchronization.
 4. Do not duplicate or omit sentences at chunk boundaries.
 5. Open each imported audio in the library, play it in full, and measure its real duration. Record every measured duration in the cue sheet.
 6. Reject and regenerate any chunk with mispronunciations, clipped words, robotic emphasis, long accidental pauses, or wrong pacing. Correct pronunciation in the script text and re-import only the failed chunk.
@@ -384,7 +384,7 @@ For each scene, record:
 
 Break scenes at semantic boundaries, not arbitrary equal lengths. If a sentence contains three distinct visual claims, plan three visible beats even if they share one generated background.
 
-When using the preferred narration-synced strategy, scene boundaries must coincide with the sentence-boundary narration chunks from Section 9.2: one chunk, one scene, and the scene's planned duration is its chunk's measured audio length, never more than 10 seconds.
+When using the preferred narration-synced strategy, scene boundaries must coincide with the sentence-boundary narration chunks from Section 9.2: one chunk, one scene, and the scene's planned duration is its chunk's measured audio length — chunks obey the 120-character dialog cap, so roughly 8 seconds at most.
 
 ## 11. Prompt construction
 
@@ -487,19 +487,23 @@ The VideoExpress All-Access account renders at most 5 video generations in paral
 
 Prefer rendering each scene directly against its own narration chunk. This is the preferred scene-audio strategy: synchronization is automatic, and every scene becomes an identical, repeatable panel loop — still, audio, motion, verify, next — which also makes it the safer procedure for weaker agent models.
 
-1. Confirm the scene's chunk audio exists and is accepted (Section 9.2): one sentence-bounded chunk of 10 seconds or less, titled with the scene ID.
-2. Generate and accept the scene still exactly as in 13.1.
-3. In the `Create Video From Prompt` panel, select the `Narration Video (Choose my Audio)` mode.
-4. Attach that scene's chunk audio, or generate it inline through the CloneVoice.ai integration voice — always the same ledger voice as every other chunk.
-5. Keep `Lipsync HD Video` off and keep the narration-scene safety line in the animation prompt; narration under a scene never licenses lip movement.
-6. Paste the action-specific animation prompt and verify public sharing is off.
-7. Submit and confirm a new generation identifier appears at the modal footer (Section 21); an unchanged identifier means no job started.
-8. The clip renders auto-fitted to its chunk's audio length. No manual alignment is required.
-9. Preview the result: the narrated sentence must sit fully inside the clip with no clipped words, and the primary narrated verb must be visible on screen.
+This live-verified procedure runs entirely inside `Create Video From Prompt`:
+
+1. Confirm the scene's chunk text is ready and accepted (Section 9.2): one sentence-bounded chunk of 120 characters or less — the hard cap enforced by the narration audio dialog, roughly 8 seconds of speech — tagged with the scene ID. Any chunk over 120 characters must be re-split at a natural clause boundary before proceeding.
+2. In the `Create Video From Prompt` panel, check `Narration Video (Choose my Audio)`. Verify the mode actually engaged by two visible changes: the `Video Only (No Sound)` checkbox disappears while Narration Video is checked (the two are mutually exclusive), and the motion-prompt field relabels from "Video and Audio Prompt" to "Video Prompt".
+3. Fill the Image Prompt and the Video Prompt with the scene prompts. Keep `Lipsync HD Video` off and keep the narration-scene safety line in the Video Prompt — narration under a scene never licenses lip movement. Verify public sharing is off.
+4. Generate and accept the scene still with `Create Image`, exactly as in 13.1.
+5. Click `Create Video`. A dialog titled "Create Narration Video - Create Audio" opens with four tabs: `Text to Speech` (Microsoft voices), `CloneVoice.ai`, `Voice Recording`, and `Import Audio`.
+6. Choose the `CloneVoice.ai` tab. Set Category `System` and Language `English`, then search the Voice picker for the ledger voice — normally `Lucas Rhodes` (results show a "New" badge) — always the same ledger voice as every other chunk. Beware the swapped-placeholder trap documented in Section 21A: target the two search fields by their visible label position, never by placeholder.
+7. Type the chunk text into the text box and confirm the character counter registers it (for example "111 / 120").
+8. Click `Import Speech` and wait for the waveform player — with a duration readout such as "00:00 / 00:07" — to appear below the button. Play it and apply the Section 9.2 quality rules; regenerate the chunk if it fails.
+9. Click `Create Narration Video`. Success is the toast "Your video will appear in your Media Library under the My Media tab when it's ready." plus a new `Video: <uuid>` identifier at the modal footer (Section 21); an unchanged identifier means no job started.
+10. The clip renders auto-fitted to its chunk's audio duration — chunks of about 100–111 characters render to 6–7-second clips with Lucas Rhodes. No manual alignment is required.
+11. Preview the result: the narrated sentence must sit fully inside the clip with no clipped words, and the primary narrated verb must be visible on screen.
 
 Assembly under this strategy is simple: place the accepted clips on the timeline in scene-ID order and trim any small gaps between them. Do not also lay the narration separately — each clip already carries its own audio, and doubling it creates echo (Section 19A).
 
-The alternative — one full master narration through `Import Media Text to Speech` plus timeline alignment (Sections 15 and 19A) — remains valid for simple videos. Chunked narration-synced clips are preferred for tight synchronization and for weaker agent models. The 10-second per-chunk cap is hard, and chunks split only at sentence ends.
+The alternative — one full master narration through `Import Media Text to Speech` plus timeline alignment (Sections 15 and 19A) — remains valid for simple videos. Chunked narration-synced clips are preferred for tight synchronization and for weaker agent models. The 120-character per-chunk cap is hard (the dialog refuses more; roughly 8 seconds of speech): chunks split at sentence ends, and a sentence longer than 120 characters splits at a natural clause boundary.
 
 ### 13.3 Scene motion (silent-clip alternative)
 
@@ -1068,8 +1072,8 @@ For narration-led animated-history scenes use this settings lock unless a scene 
 - `Automatically enhance image prompt`: off when the prompt is already detailed;
 - `Use Consistent Character`: on only when a recurring character reference is needed;
 - `Lipsync HD Video`: off;
-- `Narration Video`: off while generating silent scene-only visuals; on, in `Choose my Audio` mode with the scene's chunk audio attached, when generating the preferred narration-synced scene clips of Section 13.2;
-- `Video Only`: on for silent clips; off when `Narration Video` is in use;
+- `Narration Video`: off while generating silent scene-only visuals; on, in `Choose my Audio` mode, when generating the preferred narration-synced scene clips of Section 13.2 (checking it relabels the motion-prompt field from "Video and Audio Prompt" to "Video Prompt");
+- `Video Only`: on for silent clips; this checkbox disappears from the panel entirely while `Narration Video` is checked — the two are mutually exclusive, and its disappearance is a verified confirmation that Narration Video mode engaged;
 - `Share in public gallery`: off;
 - `Advanced Mode`: on;
 - `Enhance video prompt`: off when ordered physical actions are already specified;
@@ -1079,6 +1083,10 @@ For narration-led animated-history scenes use this settings lock unless a scene 
 After filling the duration slider, inspect its live value or accessibility state. The static HTML `value` attribute may remain at an old default even when the actual slider changed. Do not submit until the visible/live value matches the scene plan.
 
 Click `Create Image`, wait for the completed image and its visible identifier, then inspect the full image. Only after acceptance click `Create Video` (or, for consistent-character generations, the dedicated `+ Consistent Character` button per Section 8.2). Confirm every submission by the new generation identifier at the modal footer (Section 21); a disappearing progress bar is not completion proof. Confirm the finished clip appears in `Media Library` -> `My AI Videos`, open it, and inspect multiple frames.
+
+Narration-synced clips route through an intermediate audio dialog: with `Narration Video (Choose my Audio)` checked, clicking `Create Video` opens a dialog titled "Create Narration Video - Create Audio" with four tabs — `Text to Speech` (Microsoft voices), `CloneVoice.ai`, `Voice Recording`, and `Import Audio`. Its text box enforces a hard 120-character cap with a live counter ("0 / 120") beneath it. `Import Speech` renders the chunk and shows a waveform player (duration readout such as "00:00 / 00:07") below the button; `Create Narration Video` submits the render, and success is the toast "Your video will appear in your Media Library under the My Media tab when it's ready." plus a new `Video: <uuid>` identifier at the modal footer (procedure in Section 13.2).
+
+Verified UI trap in that dialog's `CloneVoice.ai` tab: the two search comboboxes' internal placeholders are SWAPPED relative to their visible labels — the field under "Language:" carries the placeholder "Search voice..." and the field under "Voice:" carries the language placeholder. Target these fields by their visible label position, never by placeholder, and verify by dropdown contents: typing into the Language field lists languages, and typing into the Voice field lists voices. Voice search results for the ledger voice (`Lucas Rhodes`) show a "New" badge.
 
 Prefix every motion prompt with a stable scene tag such as `[SC-001]`. VideoExpress library titles are derived from prompt text, so this makes generated clips recoverable even when the library reorders.
 
