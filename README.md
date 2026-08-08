@@ -16,6 +16,16 @@ This prompt gives the agent **exactly one way** to do every step. No alternative
 6. **GATE 4** — All clips assembled in story order. No separate narration track — the clips carry their own audio.
 7. **GATE 5** — Completion requires an evidence table: N table rows = N distinct clips on the timeline, durations summing to the export. The agent cannot call the job done early.
 
+## The non-terminal execution contract — no stalls, no half-finished runs
+
+Some agents (observed live on ChatGPT) hit a browser hiccup mid-production — a lost tab, a dead modal, a queued render — decide they're stuck, and end the run with "I generated some scenes; you can continue from here." The prompt's **Section 0.1** makes that decision explicitly illegal:
+
+- The run has exactly **two legal endings**: verified completion (all N clips accepted, on the timeline in order, exported, downloaded, and the file watched) or a verified hard blocker from a **closed seven-item list** (login/security, the API-key fix, an unauthorized purchase, an explicit insufficient-credits message, a platform still down after the full recovery procedure has run twice, an irreversible public action, or you telling it to stop) — each requiring visible on-screen evidence.
+- Everything else — stale tabs, dead modals, failed selectors, queued renders, restarted sessions — is a defined **recoverable state** routed through one recovery loop: reacquire the live tab, reconcile the media library against the production ledger, reopen the generator, and resume at the first unfinished row. Waiting is done by visible polling every 20–40 seconds, never by refreshing and never by ending the turn.
+- Partial-completion final messages are prohibited by name, and the prompt's last line repeats the rule: if the evidence table doesn't balance at N/N/N/N with a watched export, keep working.
+
+No prompt can overcome a genuine login, credit, outage, or platform limit — that's exactly what the hard-blocker list is for. Everything short of that gets recovered, not reported.
+
 ## How to use
 
 1. **One-time setup:** log in to **app.videoexpress.ai** and **app.clonevoice.ai** in the browser your AI agent controls. In CloneVoice: Settings → API Key → Generate API Key → Copy. In VideoExpress: top-right menu → Edit profile → paste into the **CloneVoice.ai API key** field → Save. Leave the tabs open.
